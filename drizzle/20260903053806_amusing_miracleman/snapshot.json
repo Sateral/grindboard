@@ -1,0 +1,75 @@
+{
+  "id": "107c0772-84f8-4559-a8e4-dceecf487615",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "version": "8",
+  "dialect": "postgres",
+  "ddl": [
+    {
+      "isRlsEnabled": false,
+      "name": "health_checks",
+      "schema": "public",
+      "entityType": "tables"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "health_checks_pkey",
+      "schema": "public",
+      "table": "health_checks",
+      "entityType": "pks"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": {
+        "name": "health_checks_id_seq",
+        "type": "always",
+        "startWith": "1",
+        "minValue": "1",
+        "maxValue": "2147483647",
+        "increment": "1",
+        "cache": 1,
+        "cycle": false
+      },
+      "name": "id",
+      "schema": "public",
+      "table": "health_checks",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "source",
+      "schema": "public",
+      "table": "health_checks",
+      "entityType": "columns"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "checked_at",
+      "schema": "public",
+      "table": "health_checks",
+      "entityType": "columns"
+    }
+  ],
+  "renames": []
+}
