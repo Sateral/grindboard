@@ -28,10 +28,7 @@ Start the app with `npm run dev`.
 ## Verification
 
 ```bash
-npm run check
-npm run typecheck
-npm run test:run
-npm run build
+npm run verify
 ```
 
 ## Deployment
