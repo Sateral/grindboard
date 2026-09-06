@@ -5,8 +5,13 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: var(--font-sans);
-  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --font-sans:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --font-mono:
+    var(--font-jetbrains), ui-monospace, "SFMono-Regular", Menlo, Consolas,
+    monospace;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -25,32 +30,33 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
+
+  /* Radii: 4px controls, 8px cards */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 8px;
 }
 
 :root {
-  --background: oklch(0.105 0.012 145);
-  --foreground: oklch(0.96 0.006 105);
-  --card: oklch(0.145 0.012 145);
-  --card-foreground: oklch(0.96 0.006 105);
-  --popover: oklch(0.145 0.012 145);
-  --popover-foreground: oklch(0.96 0.006 105);
-  --primary: oklch(0.87 0.16 145);
-  --primary-foreground: oklch(0.13 0.02 145);
-  --secondary: oklch(0.2 0.015 145);
-  --secondary-foreground: oklch(0.94 0.006 105);
-  --muted: oklch(0.2 0.015 145);
-  --muted-foreground: oklch(0.68 0.01 120);
-  --accent: oklch(0.23 0.025 145);
-  --accent-foreground: oklch(0.94 0.006 105);
-  --destructive: oklch(0.66 0.2 25);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.87 0.16 145);
-  --radius: 0.5rem;
+  --background: #10110f;
+  --foreground: #e7e7df;
+  --card: #1b1d1f;
+  --card-foreground: #ffffff;
+  --popover: #26272d;
+  --popover-foreground: #ffffff;
+  --primary: #83c3ff;
+  --primary-foreground: #080809;
+  --secondary: #26272d;
+  --secondary-foreground: #ffffff;
+  --muted: #26272d;
+  --muted-foreground: #acadae;
+  --accent: #3c3d40;
+  --accent-foreground: #ffffff;
+  --destructive: #e24756;
+  --border: #34353c;
+  --input: #34353c;
+  --ring: #83c3ff;
 }
 
 @layer base {
@@ -59,15 +65,22 @@
   }
 
   html {
-    @apply bg-background font-sans;
+    @apply bg-background font-sans text-foreground;
+    color-scheme: dark;
     scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-background text-foreground;
-    background-image:
-      linear-gradient(oklch(1 0 0 / 2%) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(1 0 0 / 2%) 1px, transparent 1px);
-    background-size: 28px 28px;
+    @apply bg-background text-foreground antialiased;
+  }
+
+  ::selection {
+    background: rgb(231 231 223 / 20%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }

@@ -1,146 +1,229 @@
-import {
-  ArrowUpRight,
-  Braces,
-  BriefcaseBusiness,
-  GitCommit,
-} from "lucide-react";
+import { ArrowDown, ArrowUpRight } from "lucide-react";
+import type { CSSProperties } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import styles from "./page.module.css";
 
-const activityColors = {
-  application: "bg-[#57a6ff]",
-  leetcode: "bg-[#f5c451]",
-  commit: "bg-[#7ee787]",
-} as const;
+const activities = [
+  { name: "Applications", color: "blue" },
+  { name: "LeetCode solves", color: "yellow" },
+  { name: "Counted commits", color: "green" },
+] as const;
 
-const previewCells = Array.from({ length: 91 }, (_, index) => {
-  let color = "bg-white/[0.055]";
-  if ([12, 13, 28, 44, 45, 72].includes(index)) color = activityColors.commit;
-  if ([20, 37, 60, 61].includes(index)) color = activityColors.leetcode;
-  if ([29, 52, 75].includes(index)) color = activityColors.application;
-
-  return { id: `preview-${index}`, color };
+// Deterministic illustration only; real calendar and activity data come later.
+const previewDays = Array.from({ length: 364 }, (_, day) => {
+  const week = Math.floor(day / 7);
+  const seed = (day * 17 + week * 13) % 101;
+  const active = seed < 22 + week * 0.9;
+  return {
+    id: `sample-day-${day}`,
+    color: active ? activities[seed % activities.length].color : "gray",
+    intensity: active ? 0.45 + (seed % 4) * 0.18 : 1,
+  };
 });
 
-const activityLegend = [
+const principles = [
   {
-    label: "Applications",
-    color: activityColors.application,
-    icon: BriefcaseBusiness,
+    title: "Three kinds of progress. One place.",
+    description:
+      "Track an Application, log a LeetCode solve, or count commits from a public, non-fork repository. Different work. The same forward motion.",
   },
-  { label: "LeetCode solves", color: activityColors.leetcode, icon: Braces },
-  { label: "Counted commits", color: activityColors.commit, icon: GitCommit },
+  {
+    title: "Every day tells the truth.",
+    description:
+      "A day takes the color of its strongest activity: applications first, then solves, then commits. Days without a Hit stay Gray. Nothing gets hidden.",
+  },
+  {
+    title: "Consistency, without shortcuts.",
+    description:
+      "One Hit keeps your Streak going. One missed day resets it. No freezes, no catch-up days. Just a record of showing up.",
+  },
 ];
 
 export default function Home() {
   return (
-    <main className="relative isolate min-h-svh overflow-hidden px-5 py-5 sm:px-8 lg:px-12">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(circle_at_80%_0%,rgba(126,231,135,0.14),transparent_48%)]" />
-
-      <nav className="mx-auto flex max-w-7xl items-center justify-between border-b border-white/10 pb-5">
-        <a
-          className="flex items-center gap-3 font-mono text-sm font-semibold tracking-[0.2em] uppercase"
-          href="#top"
-        >
-          <span className="grid size-8 place-items-center border border-[#7ee787]/70 bg-[#7ee787]/10 text-[#7ee787]">
-            G
+    <div className={styles.landing} id="top">
+      <a className={styles.skipLink} href="#main">
+        Skip to content
+      </a>
+      <header className={styles.header}>
+        <a className={styles.wordmark} href="#top" aria-label="Grindboard home">
+          <span className={styles.mark} aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span />
           </span>
           Grindboard
         </a>
-        <Badge
-          variant="outline"
-          className="border-white/15 bg-white/[0.03] font-mono text-[0.65rem] tracking-[0.18em] text-white/60 uppercase"
-        >
-          Foundation online
-        </Badge>
-      </nav>
+        <nav aria-label="Main navigation" className={styles.navigation}>
+          <a href="#about">The idea</a>
+          <a href="#preview" className={styles.headerAction}>
+            See the board <ArrowUpRight size={14} aria-hidden="true" />
+          </a>
+        </nav>
+      </header>
 
-      <section
-        id="top"
-        className="mx-auto grid min-h-[calc(100svh-6rem)] max-w-7xl items-center gap-14 py-16 lg:grid-cols-[0.9fr_1.1fr] lg:py-20"
-      >
-        <div className="max-w-2xl">
-          <p className="mb-5 font-mono text-xs font-medium tracking-[0.22em] text-[#7ee787] uppercase">
-            Job hunt telemetry / 2026
+      <main id="main">
+        <section className={styles.hero} aria-labelledby="hero-title">
+          <p className={styles.eyebrow}>
+            For the work between where you are and what&apos;s next.
           </p>
-          <h1 className="text-balance text-5xl leading-[0.92] font-semibold tracking-[-0.055em] sm:text-7xl lg:text-[6.5rem]">
+          <h1 id="hero-title">
             The work
-            <span className="block text-white/35">leaves a mark.</span>
+            <br />
+            <span>leaves a mark.</span>
           </h1>
-          <p className="mt-7 max-w-xl text-pretty text-base leading-7 text-white/55 sm:text-lg">
-            Applications, LeetCode solves, and Counted commits on one board.
-            Every day is visible. Every gap stays visible.
+          <p className={styles.introduction}>
+            The applications. The problems solved. The code shipped.
+            <br className={styles.desktopBreak} />
+            Your entire job hunt, one day at a time.
           </p>
-          <div className="mt-9 flex flex-wrap items-center gap-3">
-            <Button
-              asChild
-              size="lg"
-              className="h-11 rounded-none bg-[#7ee787] px-5 text-black hover:bg-[#9af0a0]"
-            >
-              <a href="#foundation">
-                Inspect foundation <ArrowUpRight data-icon="inline-end" />
-              </a>
-            </Button>
-            <span className="font-mono text-[0.7rem] tracking-[0.14em] text-white/35 uppercase">
-              Next: identity + timezone
-            </span>
-          </div>
-        </div>
+          <Button asChild className={styles.primaryAction}>
+            <a href="#preview">
+              Explore the board <ArrowDown size={16} aria-hidden="true" />
+            </a>
+          </Button>
+          <p className={styles.heroNote}>
+            Three activities. One honest picture.
+          </p>
+        </section>
 
-        <Card
-          id="foundation"
-          className="overflow-hidden rounded-none border-white/10 bg-[#111411]/90 py-0 shadow-2xl shadow-black/40"
+        <section
+          id="preview"
+          className={styles.preview}
+          aria-labelledby="preview-title"
         >
-          <CardContent className="p-0">
-            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-              <div>
-                <p className="font-mono text-[0.65rem] tracking-[0.18em] text-white/35 uppercase">
-                  Heatmap preview
-                </p>
-                <p className="mt-1 text-sm text-white/70">
-                  A preview of the system to come
-                </p>
-              </div>
-              <span className="size-2 animate-pulse rounded-full bg-[#7ee787] shadow-[0_0_16px_#7ee787]" />
+          <div className={styles.previewHeader}>
+            <div>
+              <p className={styles.eyebrow}>The bigger picture</p>
+              <h2 id="preview-title">A year of showing up.</h2>
             </div>
+            <span className={styles.previewLabel}>Illustrative preview</span>
+          </div>
 
-            <div className="p-5 sm:p-7">
-              <div
-                className="grid grid-flow-col grid-rows-7 gap-1.5"
-                aria-label="Heatmap preview"
-                role="img"
-              >
-                {previewCells.map((cell) => (
-                  <span
-                    key={cell.id}
-                    className={`aspect-square min-w-0 rounded-[2px] ${cell.color}`}
-                  />
-                ))}
-              </div>
-
-              <div className="mt-7 grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-3">
-                {activityLegend.map(({ label, color, icon: Icon }) => (
-                  <div
-                    key={label}
-                    className="flex items-center gap-3 bg-[#111411] px-4 py-3.5"
-                  >
-                    <Icon className="size-4 text-white/40" />
-                    <span className="text-sm text-white/65">{label}</span>
-                    <span className={`ml-auto size-2 rounded-[2px] ${color}`} />
+          <div className={styles.board}>
+            <div className={styles.boardHeader}>
+              <span>Activity overview</span>
+              <span className={styles.mono}>52 weeks</span>
+            </div>
+            <div className={styles.heatmapScroll}>
+              <div className={styles.heatmapCanvas}>
+                <div className={styles.quarters} aria-hidden="true">
+                  <span>First quarter</span>
+                  <span>Second quarter</span>
+                  <span>Third quarter</span>
+                  <span>Fourth quarter</span>
+                </div>
+                <div className={styles.gridRow}>
+                  <div className={styles.dayLabels} aria-hidden="true">
+                    <span>Mon</span>
+                    <span>Wed</span>
+                    <span>Fri</span>
                   </div>
-                ))}
-              </div>
-
-              <div className="mt-5 flex items-center justify-between border-t border-dashed border-white/10 pt-5 font-mono text-[0.65rem] tracking-[0.12em] uppercase">
-                <span className="text-white/30">System status</span>
-                <span className="text-[#7ee787]">Shell ready</span>
+                  <div
+                    className={styles.heatmap}
+                    role="img"
+                    aria-label="Illustrative 52-week heatmap: blue application days, yellow LeetCode days, green commit days, and Gray days without activity. Activity becomes more consistent across the year."
+                  >
+                    {previewDays.map((day) => (
+                      <span
+                        key={day.id}
+                        data-color={day.color}
+                        className={styles.cell}
+                        style={
+                          { "--intensity": day.intensity } as CSSProperties
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </section>
-    </main>
+            <div className={styles.boardFooter}>
+              <ul className={styles.legend} aria-label="Activity colors">
+                {activities.map((activity) => (
+                  <li key={activity.color}>
+                    <span
+                      data-color={activity.color}
+                      className={styles.swatch}
+                      aria-hidden="true"
+                    />
+                    {activity.name}
+                  </li>
+                ))}
+                <li>
+                  <span
+                    className={styles.swatch}
+                    data-color="gray"
+                    aria-hidden="true"
+                  />
+                  No activity
+                </li>
+              </ul>
+              <span className={styles.sampleLabel}>
+                Sample data, not a live account
+              </span>
+            </div>
+          </div>
+          <p className={styles.previewCaption}>
+            Not every day looks the same. They all belong in the picture.
+          </p>
+        </section>
+
+        <section
+          id="about"
+          className={styles.about}
+          aria-labelledby="about-title"
+        >
+          <div className={styles.aboutIntro}>
+            <p className={styles.eyebrow}>Less managing. More doing.</p>
+            <h2 id="about-title">
+              You do the work.
+              <br />
+              <span>Let it add up.</span>
+            </h2>
+            <p>
+              The job hunt can feel like standing still.
+              <br />
+              Grindboard gives your effort a little perspective.
+            </p>
+          </div>
+          <div className={styles.principles}>
+            {principles.map((principle, index) => (
+              <article className={styles.principle} key={principle.title}>
+                <span className={styles.number} aria-hidden="true">
+                  0{index + 1}
+                </span>
+                <div>
+                  <h3>{principle.title}</h3>
+                  <p>{principle.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.closing} aria-labelledby="closing-title">
+          <div>
+            <p className={styles.eyebrow}>Progress is a practice.</p>
+            <h2 id="closing-title">Make the days count.</h2>
+          </div>
+          <a href="#preview">
+            Take a closer look <ArrowUpRight size={18} aria-hidden="true" />
+          </a>
+        </section>
+      </main>
+
+      <footer className={styles.footer}>
+        <a href="#top" className={styles.footerBrand}>
+          Grindboard
+        </a>
+        <span>A little work. A visible difference.</span>
+        <a href="#top">
+          Back to top <ArrowUpRight size={13} aria-hidden="true" />
+        </a>
+      </footer>
+    </div>
   );
 }
