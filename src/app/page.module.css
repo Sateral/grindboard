@@ -324,6 +324,7 @@
   gap: 24px;
   padding: 44px 0;
   border-block: 1px solid var(--line);
+  scroll-margin-top: 24px;
 }
 .closing h2 {
   margin-top: 10px;

@@ -134,8 +134,8 @@ Mono should support the product's measured character, not turn the page into a t
 The header is a quiet horizontal line, not an application toolbar.
 
 - Left: a small geometric Grindboard mark and wordmark.
-- Right: one contextual link such as `The idea` and one outlined link such as `See the board`.
-- No search box, account avatar, icon rail, sidebar, or fake sign-in controls on the public landing page.
+- Right: one contextual link such as `The idea` and one outlined action that signs people in (`Sign in`, linking to the closing sign-in row).
+- No search box, account avatar, icon rail, sidebar, or decorative chrome on the public landing page.
 - Use a thin bottom hairline only when needed to anchor the page.
 
 ### Hero
@@ -190,7 +190,7 @@ The closing action is a quiet bordered row, not a large colored banner.
 
 - Eyebrow: `Progress is a practice.`
 - Heading: `Make the days count.`
-- One text link: `Take a closer look` with a small arrow.
+- Right side: two quiet hairline buttons that begin the real flow: `Continue with GitHub` and `Continue with Google`. The buttons carry the browser's IANA time zone into the OAuth state so a new User's day boundaries are right from sign-up.
 
 ### Footer
 

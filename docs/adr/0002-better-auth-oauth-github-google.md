@@ -1,0 +1,5 @@
+# Better Auth with GitHub and Google OAuth, OAuth-only
+
+Anyone can sign up, so v1 needs real auth. We use Better Auth with its Drizzle adapter on Neon and database-backed sessions. Sign-in is OAuth-only through GitHub and Google; email/password is not enabled, so there are no password verification or reset flows. Signing in with or explicitly linking GitHub doubles as commit-ingestion setup: the User stores the GitHub username, while the linked provider Account stores the encrypted OAuth access token that raises the GitHub API rate limit from 60 to 5,000 requests/hour. Supabase auth was rejected because it would re-platform ADR-0001 to buy bundled services we do not need, and Clerk was rejected as an additional identity vendor for a small application.
+
+Consequence: Users who sign up with Google get full tracking but no commit ingestion until they explicitly link GitHub. Better Auth owns Users, provider Accounts, and Sessions; application data references the User and cascades on hard deletion.

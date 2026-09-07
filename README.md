@@ -16,7 +16,14 @@ npm install
 cp .env.example .env.local
 ```
 
-Set `DATABASE_URL` in `.env.local`, then initialize and verify the database:
+Fill in `DATABASE_URL`, `BETTER_AUTH_SECRET` (generate one with
+`npx @better-auth/cli secret`), and the GitHub/Google OAuth credentials in
+`.env.local`. The OAuth callback/redirect URLs are:
+
+- `{BETTER_AUTH_URL}/api/auth/callback/github`
+- `{BETTER_AUTH_URL}/api/auth/callback/google`
+
+Initialize and verify the database:
 
 ```bash
 npm run db:migrate
@@ -33,6 +40,11 @@ npm run verify
 
 ## Deployment
 
-The application deploys to Vercel from `main`. Configure `DATABASE_URL` in the Vercel project before running migrations and the production database health check.
+The application deploys to Vercel from `main`. Configure `DATABASE_URL`,
+`BETTER_AUTH_SECRET`, and the GitHub/Google OAuth credentials in the Vercel
+project before running migrations and the production database health check.
+Set `BETTER_AUTH_URL` to the production origin (e.g.
+`https://grindboard.vercel.app`) and register the `/api/auth/callback/github`
+and `/api/auth/callback/google` redirect URIs on the OAuth apps.
 
 The project vocabulary lives in [CONTEXT.md](./CONTEXT.md). Architectural decisions live in [docs/adr](./docs/adr).
