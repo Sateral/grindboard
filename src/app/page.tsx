@@ -1,7 +1,6 @@
 import { ArrowDown, ArrowUpRight } from "lucide-react";
 import type { CSSProperties } from "react";
 
-import { SignInButtons } from "@/components/sign-in-buttons";
 import { Button } from "@/components/ui/button";
 import styles from "./page.module.css";
 
@@ -59,7 +58,7 @@ export default function Home() {
         </a>
         <nav aria-label="Main navigation" className={styles.navigation}>
           <a href="#about">The idea</a>
-          <a href="#sign-in" className={styles.headerAction}>
+          <a href="/auth" className={styles.headerAction}>
             Sign in <ArrowUpRight size={14} aria-hidden="true" />
           </a>
         </nav>
@@ -214,7 +213,9 @@ export default function Home() {
             <p className={styles.eyebrow}>Progress is a practice.</p>
             <h2 id="closing-title">Make the days count.</h2>
           </div>
-          <SignInButtons />
+          <a className={styles.closingAction} href="/auth">
+            Sign in to your board <ArrowUpRight size={18} aria-hidden="true" />
+          </a>
         </section>
       </main>
 

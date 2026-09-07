@@ -190,7 +190,7 @@ The closing action is a quiet bordered row, not a large colored banner.
 
 - Eyebrow: `Progress is a practice.`
 - Heading: `Make the days count.`
-- Right side: two quiet hairline buttons that begin the real flow: `Continue with GitHub` and `Continue with Google`. The buttons carry the browser's IANA time zone into the OAuth state so a new User's day boundaries are right from sign-up.
+- Right side: one quiet text link to the dedicated sign-in page. The sign-in page carries the browser's IANA time zone into the OAuth state so a new User's day boundaries are right from sign-up.
 
 ### Footer
 
