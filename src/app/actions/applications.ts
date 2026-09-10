@@ -13,7 +13,7 @@ import {
 import { isDateKey } from "@/lib/heatmap/dates";
 import { getCurrentSession } from "@/lib/session";
 
-export type QuickAddApplicationState = { error?: string };
+export type QuickAddApplicationState = { error?: string; ok?: boolean };
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -85,7 +85,29 @@ export async function createApplicationAction(
   });
 
   revalidatePath("/board");
-  return {};
+  return { ok: true };
+}
+
+export async function deleteApplicationAction(formData: FormData) {
+  const session = await getCurrentSession();
+  if (!session) {
+    redirect("/");
+  }
+
+  const id = formData.get("id");
+  if (typeof id !== "string" || !uuidPattern.test(id)) {
+    return;
+  }
+
+  // The User-id condition keeps the deletion scoped to the owner even for a
+  // direct POST with a foreign application id.
+  await getDatabase()
+    .delete(applications)
+    .where(
+      and(eq(applications.id, id), eq(applications.userId, session.user.id)),
+    );
+
+  revalidatePath("/board");
 }
 
 export async function updateApplicationStatusAction(formData: FormData) {

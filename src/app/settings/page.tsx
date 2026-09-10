@@ -6,6 +6,15 @@ import { AppHeader } from "@/components/account/app-header";
 import { ConnectGitHubButton } from "@/components/account/connect-github-button";
 import { DeleteAccountButton } from "@/components/account/delete-account-button";
 import { SignOutButton } from "@/components/account/sign-out-button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { getDatabase } from "@/db";
 import { accounts } from "@/db/schema";
 import { getCurrentSession } from "@/lib/session";
@@ -76,26 +85,22 @@ export default async function SettingsPage() {
             action={updateTimezoneAction}
             className="mt-5 flex items-end gap-3"
           >
-            <label className="flex flex-col gap-2 text-[12px] text-[#979793]">
-              IANA time zone
-              <select
-                name="timezone"
-                defaultValue={timezone}
-                className="h-9 min-w-56 rounded border border-white/15 bg-[#141513] px-3 text-[13px] text-[#e7e7df] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c2c2ba]"
-              >
-                {timeZones.map((zone) => (
-                  <option key={zone} value={zone}>
-                    {zone}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="submit"
-              className="h-9 rounded border border-white/15 bg-white/[0.03] px-4 text-[13px] text-[#e7e7df] transition-colors hover:border-white/40 hover:bg-white/[0.07]"
-            >
-              Save
-            </button>
+            <div className="flex flex-col gap-2 text-[12px] text-[#979793]">
+              <Label htmlFor="timezone-select">IANA time zone</Label>
+              <Select defaultValue={timezone} name="timezone">
+                <SelectTrigger className="min-w-56" id="timezone-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {timeZones.map((zone) => (
+                    <SelectItem key={zone} value={zone}>
+                      {zone}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <SubmitButton pendingLabel="Saving…">Save</SubmitButton>
           </form>
         </section>
 

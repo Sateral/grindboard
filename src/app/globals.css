@@ -45,8 +45,8 @@
   --card-foreground: #ffffff;
   --popover: #26272d;
   --popover-foreground: #ffffff;
-  --primary: #83c3ff;
-  --primary-foreground: #080809;
+  --primary: #e7e7df;
+  --primary-foreground: #171816;
   --secondary: #26272d;
   --secondary-foreground: #ffffff;
   --muted: #26272d;
@@ -56,7 +56,7 @@
   --destructive: #e24756;
   --border: #34353c;
   --input: #34353c;
-  --ring: #83c3ff;
+  --ring: #c2c2ba;
 }
 
 @layer base {

@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/account/app-header";
 import { SignOutButton } from "@/components/account/sign-out-button";
+import { DeleteApplicationButton } from "@/components/applications/delete-application-button";
 import { PipelineStatusForm } from "@/components/applications/pipeline-status-form";
 import { QuickAddApplicationForm } from "@/components/applications/quick-add-form";
 import { HeatmapGrid, HeatmapLegend } from "@/components/heatmap/heatmap-grid";
@@ -182,10 +183,13 @@ export default async function BoardPage() {
                       ) : null}
                     </p>
                   </div>
-                  <PipelineStatusForm
-                    applicationId={application.id}
-                    status={application.status}
-                  />
+                  <div className="flex items-center gap-2">
+                    <PipelineStatusForm
+                      applicationId={application.id}
+                      status={application.status}
+                    />
+                    <DeleteApplicationButton applicationId={application.id} />
+                  </div>
                 </li>
               ))}
             </ul>
