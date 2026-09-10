@@ -1,11 +1,16 @@
 import {
   boolean,
+  date,
   index,
   integer,
+  pgEnum,
   pgTable,
   text,
   timestamp,
+  uuid,
 } from "drizzle-orm/pg-core";
+
+import { pipelineStatuses } from "@/lib/applications/pipeline";
 
 export const healthChecks = pgTable("health_checks", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
@@ -95,3 +100,36 @@ export const verifications = pgTable(
   },
   (table) => [index("verifications_identifier_idx").on(table.identifier)],
 );
+
+// Grindboard application data. Every table below is User-scoped and cascades
+// on account deletion. Activity timestamps are instants (with time zone) so
+// day attribution can always run in the User's timezone; a Deadline is a
+// plain calendar date.
+
+export const pipelineStatus = pgEnum("pipeline_status", pipelineStatuses);
+
+export const applications = pgTable(
+  "applications",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    company: text("company").notNull(),
+    role: text("role").notNull(),
+    url: text("url"),
+    status: pipelineStatus("status").default("saved").notNull(),
+    deadline: date("deadline", { mode: "string" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("applications_user_id_idx").on(table.userId)],
+);
+
+export type Application = typeof applications.$inferSelect;
+export type NewApplication = typeof applications.$inferInsert;

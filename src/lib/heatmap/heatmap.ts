@@ -1,4 +1,10 @@
 import {
+  type ActivityColor,
+  type ActivityContribution,
+  activityPrecedence,
+} from "@/lib/activity/model";
+
+import {
   addDays,
   addMonths,
   compareDateKeys,
@@ -8,10 +14,61 @@ import {
 } from "./dates";
 import type { DateKey, Heatmap, HeatmapDay, HeatmapWeek } from "./model";
 
-export type EmptyHeatmapOptions = {
+export type HeatmapOptions = {
   now: Date;
   timeZone: string;
+  /** Recorded Activity; without it every elapsed day stays Gray. */
+  activity?: Iterable<ActivityContribution>;
 };
+
+/** Display levels for Heatmap cells; weights above the ceiling cap at 4. */
+const intensityCeiling = 4;
+
+function groupByDate(
+  activity: Iterable<ActivityContribution>,
+): Map<DateKey, ActivityContribution[]> {
+  const byDate = new Map<DateKey, ActivityContribution[]>();
+  for (const contribution of activity) {
+    const entries = byDate.get(contribution.date);
+    if (entries) {
+      entries.push(contribution);
+    } else {
+      byDate.set(contribution.date, [contribution]);
+    }
+  }
+  return byDate;
+}
+
+/**
+ * A day takes the color of its strongest Activity; the intensity is the sum
+ * of the winning color's weights, capped at the display ceiling.
+ */
+function dayActivity(
+  entries: ActivityContribution[] | undefined,
+): { color: ActivityColor; intensity: number } | null {
+  if (!entries || entries.length === 0) {
+    return null;
+  }
+
+  let color = entries[0].color;
+  for (const entry of entries) {
+    if (activityPrecedence[entry.color] > activityPrecedence[color]) {
+      color = entry.color;
+    }
+  }
+
+  let intensity = 0;
+  for (const entry of entries) {
+    if (entry.color === color) {
+      intensity += entry.intensity;
+    }
+  }
+
+  return {
+    color,
+    intensity: Math.min(intensityCeiling, Math.max(1, intensity)),
+  };
+}
 
 function daysBetween(start: DateKey, end: DateKey): number {
   let count = 0;
@@ -25,10 +82,12 @@ function daysBetween(start: DateKey, end: DateKey): number {
   return count;
 }
 
-export function buildEmptyHeatmap({
+export function buildHeatmap({
   now,
   timeZone,
-}: EmptyHeatmapOptions): Heatmap {
+  activity,
+}: HeatmapOptions): Heatmap {
+  const byDate = groupByDate(activity ?? []);
   const today = localDateKey(now, timeZone);
   const requestedStart = addDays(addMonths(today, -12), 1);
   const start = startOfMondayWeek(requestedStart);
@@ -42,15 +101,24 @@ export function buildEmptyHeatmap({
     date = addDays(date, 1)
   ) {
     const isToday = date === today;
-    days.push({
-      date,
-      status: isToday
-        ? "pending"
-        : compareDateKeys(date, today) > 0
-          ? "future"
-          : "gray",
-      isToday,
-    });
+    if (compareDateKeys(date, today) > 0) {
+      days.push({ date, status: "future", isToday });
+      continue;
+    }
+
+    const hit = dayActivity(byDate.get(date));
+    if (hit) {
+      days.push({
+        date,
+        status: "hit",
+        isToday,
+        color: hit.color,
+        intensity: hit.intensity as 1 | 2 | 3 | 4,
+      });
+      continue;
+    }
+
+    days.push({ date, status: isToday ? "pending" : "gray", isToday });
   }
 
   const weeks: HeatmapWeek[] = [];

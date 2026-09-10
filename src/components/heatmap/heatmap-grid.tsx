@@ -1,16 +1,64 @@
-import type { Heatmap, HeatmapDayStatus } from "@/lib/heatmap/model";
+import type { ActivityColor } from "@/lib/activity/model";
+import type {
+  Heatmap,
+  HeatmapDay,
+  HeatmapDayStatus,
+} from "@/lib/heatmap/model";
 
-const statusStyles: Record<HeatmapDayStatus, string> = {
+const statusStyles: Record<Exclude<HeatmapDayStatus, "hit">, string> = {
   pending: "border border-[#e7e7df] bg-[#e7e7df]/10",
   gray: "bg-[#2c2e29]",
   future: "bg-transparent",
 };
 
-const statusLabels: Record<HeatmapDayStatus, string> = {
+// Intensity levels 1–4, from the day's summed Activity weight. Activity
+// colors stay desaturated and vary in opacity, never electric.
+const hitStyles: Record<ActivityColor, Record<1 | 2 | 3 | 4, string>> = {
+  blue: {
+    1: "bg-[#6799bc]/40",
+    2: "bg-[#6799bc]/60",
+    3: "bg-[#6799bc]/80",
+    4: "bg-[#6799bc]",
+  },
+  yellow: {
+    1: "bg-[#c1aa67]/40",
+    2: "bg-[#c1aa67]/60",
+    3: "bg-[#c1aa67]/80",
+    4: "bg-[#c1aa67]",
+  },
+  green: {
+    1: "bg-[#729c83]/40",
+    2: "bg-[#729c83]/60",
+    3: "bg-[#729c83]/80",
+    4: "bg-[#729c83]",
+  },
+};
+
+const statusLabels: Record<Exclude<HeatmapDayStatus, "hit">, string> = {
   pending: "Pending day",
   gray: "Gray day",
   future: "Future day",
 };
+
+const colorLabels: Record<ActivityColor, string> = {
+  blue: "Application day",
+  yellow: "LeetCode day",
+  green: "Commit day",
+};
+
+function dayStyle(day: HeatmapDay): string {
+  if (day.status === "hit") {
+    return hitStyles[day.color][day.intensity];
+  }
+  return statusStyles[day.status];
+}
+
+function dayLabel(day: HeatmapDay): string {
+  if (day.status === "hit") {
+    return colorLabels[day.color];
+  }
+  return statusLabels[day.status];
+}
 
 const weekdays = [
   ["M", "Monday"],
@@ -65,11 +113,11 @@ export function HeatmapGrid({ heatmap }: { heatmap: Heatmap }) {
           >
             {cells.map((cell) => (
               <div
-                aria-label={`${readableDate(cell.date)}: ${statusLabels[cell.status]}`}
-                className={`size-3 rounded-[2px] ${statusStyles[cell.status]}`}
+                aria-label={`${readableDate(cell.date)}: ${dayLabel(cell)}`}
+                className={`size-3 rounded-[2px] ${dayStyle(cell)}`}
                 key={cell.date}
                 role="img"
-                title={`${readableDate(cell.date)} · ${statusLabels[cell.status]}`}
+                title={`${readableDate(cell.date)} · ${dayLabel(cell)}`}
               />
             ))}
           </div>
@@ -81,19 +129,20 @@ export function HeatmapGrid({ heatmap }: { heatmap: Heatmap }) {
 
 export function HeatmapLegend() {
   const items = [
-    ["pending", "Pending"],
-    ["gray", "No activity"],
-  ] as const;
+    { className: hitStyles.blue[2], label: "Application" },
+    { className: statusStyles.pending, label: "Pending" },
+    { className: statusStyles.gray, label: "No activity" },
+  ];
 
   return (
     <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[10px] text-[#979793]">
-      {items.map(([status, label]) => (
-        <span className="inline-flex items-center gap-2" key={status}>
+      {items.map((item) => (
+        <span className="inline-flex items-center gap-2" key={item.label}>
           <span
             aria-hidden="true"
-            className={`size-3 rounded-[2px] ${statusStyles[status]}`}
+            className={`size-3 rounded-[2px] ${item.className}`}
           />
-          {label}
+          {item.label}
         </span>
       ))}
     </div>

@@ -1,19 +1,22 @@
+import { desc, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/account/app-header";
 import { SignOutButton } from "@/components/account/sign-out-button";
+import { PipelineStatusForm } from "@/components/applications/pipeline-status-form";
+import { QuickAddApplicationForm } from "@/components/applications/quick-add-form";
 import { HeatmapGrid, HeatmapLegend } from "@/components/heatmap/heatmap-grid";
-import { buildEmptyHeatmap } from "@/lib/heatmap/heatmap";
+import { getDatabase } from "@/db";
+import { applications } from "@/db/schema";
+import { applicationActivityContributions } from "@/lib/applications/activity";
+import { pipelineStatusLabels } from "@/lib/applications/pipeline";
+import { buildHeatmap } from "@/lib/heatmap/heatmap";
+import { currentStreak } from "@/lib/heatmap/streak";
 import { getCurrentSession } from "@/lib/session";
 
 // Session-dependent; rendered on demand, never at build time.
 export const dynamic = "force-dynamic";
 
-const inputPaths = [
-  {
-    title: "Quick-add an Application",
-    description:
-      "Company, role, URL, and Pipeline status. Every create or update counts as Job-app activity.",
-  },
+const upcomingInputs = [
   {
     title: "Log a LeetCode solve",
     description:
@@ -33,10 +36,26 @@ export default async function BoardPage() {
   }
 
   const user = session.user;
-  const heatmap = buildEmptyHeatmap({
+  const timeZone = user.timezone || "UTC";
+
+  const rows = await getDatabase()
+    .select()
+    .from(applications)
+    .where(eq(applications.userId, user.id))
+    .orderBy(desc(applications.updatedAt), desc(applications.createdAt));
+
+  const heatmap = buildHeatmap({
     now: new Date(),
-    timeZone: user.timezone || "UTC",
+    timeZone,
+    activity: applicationActivityContributions(rows, timeZone),
   });
+  const hitDays = new Set(
+    heatmap.weeks
+      .flatMap((week) => week.days)
+      .filter((day) => day.status === "hit")
+      .map((day) => day.date),
+  );
+  const streak = currentStreak(hitDays, heatmap.today);
 
   return (
     <div className="mx-auto flex min-h-svh max-w-[1200px] flex-col px-5 sm:px-7 lg:px-12">
@@ -51,11 +70,14 @@ export default async function BoardPage() {
             Welcome{user.name ? `, ${user.name.split(" ")[0]}` : ""}.
           </p>
           <h1 className="mt-4 max-w-xl text-4xl font-normal tracking-[-0.03em] text-[#e7e7df]">
-            Your empty board is ready.
+            {rows.length === 0
+              ? "Your empty board is ready."
+              : "The work leaves a mark."}
           </h1>
           <p className="mt-5 max-w-lg text-sm leading-7 text-[#979793]">
-            Every square starts Gray. Today stays Pending until you record a
-            Hit. This is the honest picture of the work ahead.
+            {rows.length === 0
+              ? "Every square starts Gray. Today stays Pending until you record a Hit. This is the honest picture of the work ahead."
+              : "Every Application you log or move turns its day Blue. Today stays Pending until you record a Hit."}
           </p>
         </section>
 
@@ -68,7 +90,7 @@ export default async function BoardPage() {
               </h2>
             </div>
             <p className="font-mono text-[10px] text-[#979793]">
-              Current streak: 0 days
+              Current streak: {streak} {streak === 1 ? "day" : "days"}
             </p>
           </div>
           <HeatmapGrid heatmap={heatmap} />
@@ -80,13 +102,24 @@ export default async function BoardPage() {
         </section>
 
         <section className="grid gap-px border-b border-white/[0.07] py-10 sm:grid-cols-3">
-          {inputPaths.map((path, index) => (
+          <article className="pr-8">
+            <p className="font-mono text-[10px] text-[#979793]">01</p>
+            <h2 className="mt-3 text-[15px] font-medium text-[#c2c2ba]">
+              Quick-add an Application
+            </h2>
+            <p className="mt-2 text-[13px] leading-6 text-[#979793]">
+              Company, role, URL, and Pipeline status. Every create or update
+              counts as Job-app activity.
+            </p>
+            <QuickAddApplicationForm />
+          </article>
+          {upcomingInputs.map((path, index) => (
             <article
-              key={path.title}
               className="pr-8 [&:not(:first-child)]:border-l [&:not(:first-child)]:border-white/[0.07]"
+              key={path.title}
             >
               <p className="font-mono text-[10px] text-[#979793]">
-                0{index + 1}
+                0{index + 2}
               </p>
               <h2 className="mt-3 text-[15px] font-medium text-[#c2c2ba]">
                 {path.title}
@@ -99,6 +132,64 @@ export default async function BoardPage() {
               </span>
             </article>
           ))}
+        </section>
+
+        <section className="border-b border-white/[0.07] py-10">
+          <p className="font-mono text-[10px] text-[#979793]">Pipeline</p>
+          <h2 className="mt-2 text-xl font-normal tracking-[-0.02em] text-[#e7e7df]">
+            {rows.length === 0
+              ? "Nothing in motion yet."
+              : `${rows.length} ${rows.length === 1 ? "application" : "applications"} in motion.`}
+          </h2>
+          {rows.length === 0 ? (
+            <p className="mt-3 max-w-lg text-[13px] leading-6 text-[#979793]">
+              Quick-add your first Application above. Moving it along the
+              Pipeline — Saved, Applied, OA, Interview, Offer — keeps counting
+              as activity, automatically.
+            </p>
+          ) : (
+            <ul className="mt-6 divide-y divide-white/[0.07] border-y border-white/[0.07]">
+              {rows.map((application) => (
+                <li
+                  className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 py-4"
+                  key={application.id}
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-[14px] text-[#e7e7df]">
+                      {application.company}
+                      <span className="text-[#979793]">
+                        {" "}
+                        · {application.role}
+                      </span>
+                    </p>
+                    <p className="mt-1 font-mono text-[10px] text-[#979793]">
+                      {pipelineStatusLabels[application.status]}
+                      {application.deadline
+                        ? ` · Due ${application.deadline}`
+                        : ""}
+                      {application.url ? (
+                        <>
+                          {" · "}
+                          <a
+                            className="underline decoration-white/20 underline-offset-2 transition-colors hover:text-[#c2c2ba]"
+                            href={application.url}
+                            rel="noreferrer"
+                            target="_blank"
+                          >
+                            Posting
+                          </a>
+                        </>
+                      ) : null}
+                    </p>
+                  </div>
+                  <PipelineStatusForm
+                    applicationId={application.id}
+                    status={application.status}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </main>
 
