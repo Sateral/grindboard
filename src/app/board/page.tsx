@@ -9,6 +9,11 @@ import { HeatmapGrid, HeatmapLegend } from "@/components/heatmap/heatmap-grid";
 import { getDatabase } from "@/db";
 import { applications } from "@/db/schema";
 import { applicationActivityContributions } from "@/lib/applications/activity";
+import {
+  type DeadlineItem,
+  deadlineWindowDays,
+  upcomingDeadlines,
+} from "@/lib/applications/deadlines";
 import { pipelineStatusLabels } from "@/lib/applications/pipeline";
 import { buildHeatmap } from "@/lib/heatmap/heatmap";
 import { currentStreak } from "@/lib/heatmap/streak";
@@ -29,6 +34,17 @@ const upcomingInputs = [
       "Pushes to public, non-fork repositories become Green days with zero logging.",
   },
 ] as const;
+
+/** "Due today", "Due tomorrow", or "Due in N days" for a panel item. */
+function deadlineCountdown(item: DeadlineItem): string {
+  if (item.daysUntil === 0) {
+    return "Due today";
+  }
+  if (item.daysUntil === 1) {
+    return "Due tomorrow";
+  }
+  return `Due in ${item.daysUntil} days`;
+}
 
 export default async function BoardPage() {
   const session = await getCurrentSession();
@@ -57,6 +73,9 @@ export default async function BoardPage() {
       .map((day) => day.date),
   );
   const streak = currentStreak(hitDays, heatmap.today);
+  // The window anchors on the User's local day (heatmap.today), so "due
+  // tomorrow" is tomorrow for them, not for the server.
+  const deadlines = upcomingDeadlines(rows, heatmap.today);
 
   return (
     <div className="mx-auto flex min-h-svh max-w-[1200px] flex-col px-5 sm:px-7 lg:px-12">
@@ -133,6 +152,52 @@ export default async function BoardPage() {
               </span>
             </article>
           ))}
+        </section>
+
+        <section className="border-b border-white/[0.07] py-10">
+          <p className="font-mono text-[10px] text-[#979793]">Deadlines</p>
+          <h2 className="mt-2 text-xl font-normal tracking-[-0.02em] text-[#e7e7df]">
+            {deadlines.length === 0
+              ? "Nothing is due in the next 7 days."
+              : deadlines.length === 1
+                ? "One deadline in the next 7 days."
+                : `${deadlines.length} deadlines in the next 7 days.`}
+          </h2>
+          {deadlines.length === 0 ? (
+            <p className="mt-3 max-w-lg text-[13px] leading-6 text-[#979793]">
+              An Application deadline inside the next {deadlineWindowDays} days
+              — an OA date, a closing date — surfaces here, so it cannot sneak
+              up on you.
+            </p>
+          ) : (
+            <ul className="mt-6 divide-y divide-white/[0.07] border-y border-white/[0.07]">
+              {deadlines.map((item) => (
+                <li
+                  className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 py-4"
+                  key={item.id}
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-[14px] text-[#e7e7df]">
+                      {item.company}
+                      <span className="text-[#979793]"> · {item.role}</span>
+                    </p>
+                    <p className="mt-1 font-mono text-[10px] text-[#979793]">
+                      {pipelineStatusLabels[item.status]} · Due {item.deadline}
+                    </p>
+                  </div>
+                  <p
+                    className={
+                      item.daysUntil <= 1
+                        ? "font-mono text-[10px] text-[#e7e7df]"
+                        : "font-mono text-[10px] text-[#979793]"
+                    }
+                  >
+                    {deadlineCountdown(item)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <section className="border-b border-white/[0.07] py-10">
